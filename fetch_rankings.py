@@ -173,7 +173,17 @@ def generate_html(rankings):
 </head>
 <body>
     <h1>Facebook Post Rankings</h1>
-    <p>Data generated at {current_time}</p>
+
+    <!-- Force refresh for caching -->
+    <p id="last-update">Last update: {current_time}</p>
+    <script>
+      const timestamp = new Date().getTime();
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'style.css?v=' + timestamp;
+      document.head.appendChild(link);
+    </script>
+
     {tables_html}
 </body>
 </html>
