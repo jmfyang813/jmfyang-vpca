@@ -2,55 +2,48 @@ name: Auto-update Rankings
 
 on:
   schedule:
-    # Runs every 5 minutes
-    - cron: '*/5 * * * *'
-  workflow_dispatch:  # allows manual trigger
+    - cron: '*/5 * * * *'   # run every 5 minutes
+  workflow_dispatch:
 
 jobs:
   update-rankings:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repo (full history for rebasing)
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      # Step 2: Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
-      # Step 3: Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests pytz beautifulsoup4
 
-      # Step 4: Run your script
       - name: Run ranking script
         run: python fetch_rankings.py
 
-      # Step 5: Configure Git
       - name: Configure Git
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-      # Step 6: Pull latest changes and rebase
-      - name: Pull latest changes
+      - name: Clean workspace and rebase
         run: |
+          git reset --hard
+          git clean -fd
           git fetch origin main
           git rebase origin/main || git rebase --abort
 
-      # Step 7: Commit the updated index.html
       - name: Commit changes
         run: |
           git add index.html
           git commit -m "Auto-update rankings" || echo "No changes to commit"
 
-      # Step 8: Push changes to main branch
       - name: Push changes
         run: git push origin main
