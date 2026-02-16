@@ -122,6 +122,7 @@ def fetch_rankings():
     return rankings
 
 def generate_html(rankings):
+    # Add microseconds to guarantee uniqueness
     current_time = datetime.now(PH_TZ).strftime("%Y-%m-%d %H:%M:%S.%f")
     tables_html = ""
 
@@ -139,11 +140,9 @@ def generate_html(rankings):
     </tr>
 """
 
-        # Display the top two differences
+        # Calculate top two difference
         first_post = posts_list[0]
         second_post = posts_list[1] if len(posts_list) > 1 else None
-
-        # Calculate the difference
         if second_post:
             reactions_diff = first_post[1] - second_post[1]
             shares_diff = first_post[2] - second_post[2]
@@ -166,16 +165,12 @@ def generate_html(rankings):
 
         tables_html += "</table><br>"
 
+    # Generate HTML with cache-busting
     html_content = f"""
 <html>
 <head>
     <title>Facebook Post Rankings</title>
-</head>
-<body>
-    <h1>Facebook Post Rankings</h1>
-
-    <!-- Force refresh for caching -->
-    <p id="last-update">Last update: {current_time}</p>
+    <!-- Force reload CSS if exists -->
     <script>
       const timestamp = new Date().getTime();
       const link = document.createElement('link');
@@ -183,6 +178,12 @@ def generate_html(rankings):
       link.href = 'style.css?v=' + timestamp;
       document.head.appendChild(link);
     </script>
+</head>
+<body>
+    <h1>Facebook Post Rankings</h1>
+
+    <!-- Display last update timestamp -->
+    <p id="last-update">Last update: {current_time}</p>
 
     {tables_html}
 </body>
