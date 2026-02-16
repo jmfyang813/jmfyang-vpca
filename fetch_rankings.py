@@ -166,34 +166,50 @@ def generate_html(rankings):
         tables_html += "</table><br>"
 
     # Generate HTML with cache-busting
-    html_content = f"""
+html_content = f"""
 <html>
 <head>
     <title>Facebook Post Rankings</title>
-    <!-- Force reload CSS if exists -->
-    <script>
-      const timestamp = new Date().getTime();
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'style.css?v=' + timestamp;
-      document.head.appendChild(link);
-    </script>
+    <style>
+        table {{ border-collapse: collapse; }}
+        th, td {{ padding: 5px; border: 1px solid black; text-align: center; }}
+    </style>
 </head>
 <body>
     <h1>Facebook Post Rankings</h1>
-
-    <!-- Display last update timestamp -->
     <p id="last-update">Last update: {current_time}</p>
 
-    {tables_html}
+    <div id="rankings-table">
+        {tables_html}
+    </div>
+
+    <script>
+        // Live tracker: fetch latest index.html every 10 seconds
+        async function fetchLatest() {{
+            try {{
+                const response = await fetch(window.location.href + "?cache_bust=" + new Date().getTime());
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, "text/html");
+
+                // Replace table and last update
+                const newTable = doc.getElementById("rankings-table");
+                const newTime = doc.getElementById("last-update");
+                if(newTable && newTime) {{
+                    document.getElementById("rankings-table").innerHTML = newTable.innerHTML;
+                    document.getElementById("last-update").innerHTML = newTime.innerHTML;
+                }}
+            }} catch(err) {{
+                console.log("Failed to fetch latest rankings:", err);
+            }}
+        }}
+
+        // Poll every 10 seconds
+        setInterval(fetchLatest, 10000);
+    </script>
 </body>
 </html>
 """
-
-    with open("index.html", "w", encoding="utf-8") as f:
-        f.write(html_content)
-
-    print("✓ index.html updated successfully")
 
 if __name__ == "__main__":
     rankings = fetch_rankings()
