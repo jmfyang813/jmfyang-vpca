@@ -25,6 +25,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests pytz beautifulsoup4
 
+      - name: Reset repo to remote main
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fd
+
       - name: Run ranking script
         run: python fetch_rankings.py
 
@@ -33,17 +39,10 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-      - name: Clean workspace and rebase
-        run: |
-          git reset --hard
-          git clean -fd
-          git fetch origin main
-          git rebase origin/main || git rebase --abort
-
-      - name: Commit changes
+      - name: Commit changes if index.html changed
         run: |
           git add index.html
-          git commit -m "Auto-update rankings" || echo "No changes to commit"
+          git diff --cached --quiet || git commit -m "Auto-update rankings"
 
       - name: Push changes
         run: git push origin main
