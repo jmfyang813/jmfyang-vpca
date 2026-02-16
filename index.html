@@ -1,267 +1,181 @@
+import requests
+from datetime import datetime
+import pytz
+import json
+from bs4 import BeautifulSoup
 
-    <html>
-    <head>
-        <title>Facebook Post Rankings</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f4;
-                padding: 20px;
-            }
-            h1 {
-                color: #333;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-bottom: 20px;
-            }
-            th, td {
-                padding: 10px;
-                text-align: left;
-                border: 1px solid #ddd;
-            }
-            th {
-                background-color: #4CAF50;
-                color: white;
-            }
-            tr:nth-child(even) {
-                background-color: #f2f2f2;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Facebook Post Rankings</h1>
-        <p>Data generated at 2026-02-16 15:34:43</p>
-    <h2>DIGITAL SERIES OF THE YEAR</h2>
-        <table>
-            <tr>
-                <th>Rank</th>
-                <th>Post Name</th>
-                <th>Reactions</th>
-                <th>Shares</th>
-                <th>Total (Reactions + Shares)</th>
-            </tr>
-        
-            <tr>
-                <td>1</td>
-                <td>GHOSTING</td>
-                <td>1533</td>
-                <td>29873</td>
-                <td>31406</td>
-            </tr>
-            
-            <tr>
-                <td>2</td>
-                <td>GOLDEN SCENERY OF TOMORROW</td>
-                <td>1894</td>
-                <td>20901</td>
-                <td>22795</td>
-            </tr>
-            
-            <tr>
-                <td>3</td>
-                <td>ALIBI</td>
-                <td>193</td>
-                <td>6601</td>
-                <td>6794</td>
-            </tr>
-            
-            <tr>
-                <td>4</td>
-                <td>BAD GENIUS</td>
-                <td>264</td>
-                <td>2110</td>
-                <td>2374</td>
-            </tr>
-            
-            <tr>
-                <td>5</td>
-                <td>HOW TO SPOT A RED FLAG</td>
-                <td>9</td>
-                <td>10</td>
-                <td>19</td>
-            </tr>
-            
-            <tr>
-                <td>6</td>
-                <td>LOVE AT FIRST SPIKE</td>
-                <td>5</td>
-                <td>13</td>
-                <td>18</td>
-            </tr>
-            </table><h2>FANDOM OF THE YEAR</h2>
-        <table>
-            <tr>
-                <th>Rank</th>
-                <th>Post Name</th>
-                <th>Reactions</th>
-                <th>Shares</th>
-                <th>Total (Reactions + Shares)</th>
-            </tr>
-        
-            <tr>
-                <td>1</td>
-                <td>JMFYANG</td>
-                <td>1855</td>
-                <td>16994</td>
-                <td>18849</td>
-            </tr>
-            
-            <tr>
-                <td>2</td>
-                <td>ASHDRES</td>
-                <td>995</td>
-                <td>4008</td>
-                <td>5003</td>
-            </tr>
-            
-            <tr>
-                <td>3</td>
-                <td>DUSTBIA</td>
-                <td>750</td>
-                <td>2672</td>
-                <td>3422</td>
-            </tr>
-            
-            <tr>
-                <td>4</td>
-                <td>CAPEATH</td>
-                <td>993</td>
-                <td>2168</td>
-                <td>3161</td>
-            </tr>
-            
-            <tr>
-                <td>5</td>
-                <td>KIMPAU</td>
-                <td>106</td>
-                <td>1741</td>
-                <td>1847</td>
-            </tr>
-            
-            <tr>
-                <td>6</td>
-                <td>WILLCA</td>
-                <td>132</td>
-                <td>574</td>
-                <td>706</td>
-            </tr>
-            </table><h2>LOVETEAM OF THE YEAR</h2>
-        <table>
-            <tr>
-                <th>Rank</th>
-                <th>Post Name</th>
-                <th>Reactions</th>
-                <th>Shares</th>
-                <th>Total (Reactions + Shares)</th>
-            </tr>
-        
-            <tr>
-                <td>1</td>
-                <td>JMFYANG</td>
-                <td>2202</td>
-                <td>24790</td>
-                <td>26992</td>
-            </tr>
-            
-            <tr>
-                <td>2</td>
-                <td>WILLCA</td>
-                <td>170</td>
-                <td>12060</td>
-                <td>12230</td>
-            </tr>
-            
-            <tr>
-                <td>3</td>
-                <td>DUSTBIA</td>
-                <td>758</td>
-                <td>7417</td>
-                <td>8175</td>
-            </tr>
-            
-            <tr>
-                <td>4</td>
-                <td>ASHDRES</td>
-                <td>1063</td>
-                <td>3933</td>
-                <td>4996</td>
-            </tr>
-            
-            <tr>
-                <td>5</td>
-                <td>KIMPAU</td>
-                <td>262</td>
-                <td>1132</td>
-                <td>1394</td>
-            </tr>
-            
-            <tr>
-                <td>6</td>
-                <td>RABGEL</td>
-                <td>188</td>
-                <td>773</td>
-                <td>961</td>
-            </tr>
-            </table><h2>MUSIC VIDEO OF THE YEAR</h2>
-        <table>
-            <tr>
-                <th>Rank</th>
-                <th>Post Name</th>
-                <th>Reactions</th>
-                <th>Shares</th>
-                <th>Total (Reactions + Shares)</th>
-            </tr>
-        
-            <tr>
-                <td>1</td>
-                <td>WHEREVER YOU ARE</td>
-                <td>1089</td>
-                <td>4541</td>
-                <td>5630</td>
-            </tr>
-            
-            <tr>
-                <td>2</td>
-                <td>MINAMAHAL</td>
-                <td>496</td>
-                <td>1195</td>
-                <td>1691</td>
-            </tr>
-            
-            <tr>
-                <td>3</td>
-                <td>HANGGANG DITO NA LANG BA TAYO?</td>
-                <td>262</td>
-                <td>1381</td>
-                <td>1643</td>
-            </tr>
-            
-            <tr>
-                <td>4</td>
-                <td>NAIILANG</td>
-                <td>33</td>
-                <td>607</td>
-                <td>640</td>
-            </tr>
-            
-            <tr>
-                <td>5</td>
-                <td>WHAT IF TAYO?</td>
-                <td>9</td>
-                <td>0</td>
-                <td>9</td>
-            </tr>
-            
-            <tr>
-                <td>6</td>
-                <td>AYA</td>
-                <td>1</td>
-                <td>0</td>
-                <td>1</td>
-            </tr>
-            </table>
-    </body>
-    </html>
+# CONFIG
+posts = {
+    "DIGITAL SERIES OF THE YEAR": {
+        "GHOSTING": "ZmVlZGJhY2s6MTI5NzU5MjkzOTA2MDc5OA",
+        "LOVE AT FIRST SPIKE": "ZmVlZGJhY2s6MTI5NzU5NTU3OTA2MDUzNA",
+        "GOLDEN SCENERY OF TOMORROW": "ZmVlZGJhY2s6MTI5NzU5NjkzNTcyNzA2NQ",
+        "HOW TO SPOT A RED FLAG": "ZmVlZGJhY2s6MTI5NzU5MTIzNTcyNzYzNQ",
+        "BAD GENIUS": "ZmVlZGJhY2s6MTI5NzU4ODc1MjM5NDU1MA",
+        "ALIBI": "ZmVlZGJhY2s6MTI5NzU5ODY4NTcyNjg5MA",
+    },
+    "FANDOM OF THE YEAR": {
+        "JMFYANG": "ZmVlZGJhY2s6MTIyNzg3NDA5MjgxODU3MA",
+        "DUSTBIA": "ZmVlZGJhY2s6MTIyNzg3MDgyMjgxODg5Nw",
+        "CAPEATH": "ZmVlZGJhY2s6MTIyNzg0NjY1OTQ4Nzk4MA",
+        "WILLCA": "ZmVlZGJhY2s6MTIyNzg0Mjg0OTQ4ODM2MQ",
+        "KIMPAU": "ZmVlZGJhY2s6MTIyNzgzOTUzNjE1NTM1OQ",
+        "ASHDRES": "ZmVlZGJhY2s6MTIyNzgzNjE3NjE1NTY5NQ",
+    },
+    "LOVETEAM OF THE YEAR": {
+        "JMFYANG": "ZmVlZGJhY2s6MTIyNzc4MTIzNjE2MTE4OQ",
+        "RABGEL": "ZmVlZGJhY2s6MTIyNzc5MDMyMjgyNjk0Nw",
+        "DUSTBIA": "ZmVlZGJhY2s6MTIyNzc4Nzc3NjE2MDUzNQ",
+        "ASHDRES": "ZmVlZGJhY2s6MTIyNzc4NTY3OTQ5NDA3OA",
+        "KIMPAU": "ZmVlZGJhY2s6MTIyNzc4Mjg4OTQ5NDM1Nw",
+        "WILLCA": "ZmVlZGJhY2s6MTIyNzc3OTQyOTQ5NDcwMw",
+    },
+    "MUSIC VIDEO OF THE YEAR": {
+        "WHEREVER YOU ARE": "ZmVlZGJhY2s6OTE1MDA3OTQxMjM5MzY3",
+        "MINAMAHAL": "ZmVlZGJhY2s6OTE1MDA1MjQ0NTcyOTcw",
+        "HANGGANG DITO NA LANG BA TAYO?": "ZmVlZGJhY2s6OTE1MDAyMTkxMjM5OTQy",
+        "WHAT IF TAYO?": "ZmVlZGJhY2s6OTE0OTk4NjcxMjQwMjk0",
+        "NAIILANG": "ZmVlZGJhY2s6OTE0OTk1NzUxMjQwNTg2",
+        "AYA": "ZmVlZGJhY2s6OTE0OTkyNzE0NTc0MjIz",
+    },
+}
+
+fb_dtsg = "NAftSGxIH9AA8B7cF4KEPlkV91fVtVk8BBF6PCwammW74JUDqwbQUFw:16:1756974490"
+lsd = "Uq25aBYrQLNcHbwzY-RgZy"
+jazoest = "25363"
+
+headers = {
+    "accept": "*/*",
+    "content-type": "application/x-www-form-urlencoded",
+    "x-asbd-id": "359341",
+    "x-fb-lsd": lsd
+}
+
+graphql_url = "https://www.facebook.com/api/graphql/"
+
+import pytz
+PH_TZ = pytz.timezone("Asia/Manila")
+
+def fetch_graphql(doc_id, variables, friendly_name):
+    data = {
+        "fb_dtsg": fb_dtsg,
+        "jazoest": jazoest,
+        "fb_api_caller_class": "RelayModern",
+        "fb_api_req_friendly_name": friendly_name,
+        "variables": str(variables).replace("'", '"'),
+        "doc_id": doc_id,
+        "server_timestamps": "true"
+    }
+    response = requests.post(graphql_url, headers=headers, data=data, cookies={})
+    try:
+        return response.json()
+    except Exception as e:
+        print(f"Failed to parse response for {friendly_name}: {e}")
+        return None
+
+def fetch_rankings():
+    rankings = {}
+    for category, posts_dict in posts.items():
+        post_data = []
+        for post_name, post_id in posts_dict.items():
+            reactions_data = fetch_graphql(
+                "24051433444544934",
+                {"feedbackTargetID": post_id, "scale": 1},
+                "CometUFIReactionsDialogQuery"
+            )
+            reactions_summary = reactions_data.get("data", {}).get("node", {}).get("top_reactions", {}).get("summary", [])
+            reaction_count = next(
+                (reaction['reaction_count'] for reaction in reactions_summary 
+                 if reaction['reaction']['id'] == '613557422527858'), 0
+            )
+
+            shares_data = fetch_graphql(
+                "9843821265734688",
+                {"feedbackTargetID": post_id},
+                "CometUFISharesCountTooltipContentQuery"
+            )
+            total_shares = shares_data.get("data", {}).get("feedback", {}).get("reshares", {}).get("count", 0)
+
+            total_react_and_share = reaction_count + total_shares
+            post_data.append((post_name, reaction_count, total_shares, total_react_and_share))
+
+        sorted_posts = sorted(post_data, key=lambda x: x[3], reverse=True)
+        rankings[category] = sorted_posts
+
+    return rankings
+
+def generate_html(rankings):
+    html_template = """<html>
+<head>
+    <title>Facebook Post Rankings</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }}
+        h1 {{
+            color: #333;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }}
+        th, td {{
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }}
+        th {{
+            background-color: #4CAF50;
+            color: white;
+        }}
+        tr:nth-child(even) {{
+            background-color: #f2f2f2;
+        }}
+    </style>
+</head>
+<body>
+    <h1>Facebook Post Rankings</h1>
+    <p>Data generated at {timestamp}</p>
+    {tables_html}
+</body>
+</html>"""
+
+    current_time = datetime.now(PH_TZ).strftime("%Y-%m-%d %H:%M:%S")
     
+tables_html = ""
+    for category, posts_list in rankings.items():
+        tables_html += f"<h2>{category}</h2>\n"
+        tables_html += """<table>
+            <tr>
+                <th>Rank</th>
+                <th>Post Name</th>
+                <th>Reactions</th>
+                <th>Shares</th>
+                <th>Total (Reactions + Shares)</th>
+            </tr>
+        """
+        for rank, (post_name, reactions, shares, total) in enumerate(posts_list, 1):
+            tables_html += f"""
+            <tr>
+                <td>{rank}</td>
+                <td>{post_name}</td>
+                <td>{reactions}</td>
+                <td>{shares}</td>
+                <td>{total}</td>
+            </tr>
+            """
+        tables_html += "</table>"
+
+    html_content = html_template.format(timestamp=current_time, tables_html=tables_html)
+    
+    with open('index.html', 'w') as f:
+        f.write(html_content)
+    
+    print(f"✓ index.html updated successfully at {current_time}")
+
+if __name__ == "__main__":
+    rankings = fetch_rankings()
+    generate_html(rankings)
