@@ -1,60 +1,41 @@
-name: Auto-update Rankings
+name: Update Rankings
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # runs every 5 minutes
-  workflow_dispatch:       # allows manual trigger
+    - cron: "*/5 * * * *"   # every 5 minutes
+  workflow_dispatch:        # allow manual trigger
 
 jobs:
-  update-rankings:
+  update:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          persist-credentials: false  # important for push
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
-      # 2️⃣ Set up Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
 
-      # 3️⃣ Install dependencies
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests pytz beautifulsoup4
+    - name: Install dependencies
+      run: |
+        pip install requests pytz beautifulsoup4
 
-      # 4️⃣ Reset branch to remote main
-      - name: Reset branch
-        run: |
-          git fetch origin main
-          git reset --hard origin/main
-          git clean -fd
+    - name: Run fetch_rankings.py
+      run: python fetch_rankings.py
 
-      # 5️⃣ Run your Python script
-      - name: Run fetch_rankings.py
-        run: |
-          python fetch_rankings.py
+    - name: Commit changes
+      run: |
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        git add index.html
+        git commit -m "Auto-update rankings" || echo "No changes to commit"
 
-      # 6️⃣ Configure Git for push
-      - name: Configure Git with token
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/jmfyang813/jmfyang-vpva.git
-
-      # 7️⃣ Commit changes if index.html updated
-      - name: Commit index.html
-        run: |
-          git add index.html
-          # force commit every time to guarantee updates
-          git commit -m "Auto-update rankings $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
-
-      # 8️⃣ Push to main
-      - name: Push changes
-        run: git push origin main
+    - name: Push changes
+      uses: ad-m/github-push-action@v0.6
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
