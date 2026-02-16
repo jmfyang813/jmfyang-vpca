@@ -1,50 +1,181 @@
-from flask import Flask, render_template, jsonify
 import requests
-import time
-import base64
-from functools import lru_cache
+from datetime import datetime
+import pytz
+import json
+from bs4 import BeautifulSoup
 
-app = Flask(__name__)
-
-# Original Posts Data with Categories
-original_posts = {
-    'DIGITAL SERIES OF THE YEAR': {
-        'base64_id': base64.b64encode(b'some_id_1').decode('utf-8'),
-        'title': 'Digital Series 1'
+# CONFIG
+posts = {
+    "DIGITAL SERIES OF THE YEAR": {
+        "GHOSTING": "ZmVlZGJhY2s6MTI5NzU5MjkzOTA2MDc5OA",
+        "LOVE AT FIRST SPIKE": "ZmVlZGJhY2s6MTI5NzU5NTU3OTA2MDUzNA",
+        "GOLDEN SCENERY OF TOMORROW": "ZmVlZGJhY2s6MTI5NzU5NjkzNTcyNzA2NQ",
+        "HOW TO SPOT A RED FLAG": "ZmVlZGJhY2s6MTI5NzU5MTIzNTcyNzYzNQ",
+        "BAD GENIUS": "ZmVlZGJhY2s6MTI5NzU4ODc1MjM5NDU1MA",
+        "ALIBI": "ZmVlZGJhY2s6MTI5NzU5ODY4NTcyNjg5MA",
     },
-    'FANDOM OF THE YEAR': {
-        'base64_id': base64.b64encode(b'some_id_2').decode('utf-8'),
-        'title': 'Fandom 1'
+    "FANDOM OF THE YEAR": {
+        "JMFYANG": "ZmVlZGJhY2s6MTIyNzg3NDA5MjgxODU3MA",
+        "DUSTBIA": "ZmVlZGJhY2s6MTIyNzg3MDgyMjgxODg5Nw",
+        "CAPEATH": "ZmVlZGJhY2s6MTIyNzg0NjY1OTQ4Nzk4MA",
+        "WILLCA": "ZmVlZGJhY2s6MTIyNzg0Mjg0OTQ4ODM2MQ",
+        "KIMPAU": "ZmVlZGJhY2s6MTIyNzgzOTUzNjE1NTM1OQ",
+        "ASHDRES": "ZmVlZGJhY2s6MTIyNzgzNjE3NjE1NTY5NQ",
     },
-    'LOVETEAM OF THE YEAR': {
-        'base64_id': base64.b64encode(b'some_id_3').decode('utf-8'),
-        'title': 'Loveteam 1'
+    "LOVETEAM OF THE YEAR": {
+        "JMFYANG": "ZmVlZGJhY2s6MTIyNzc4MTIzNjE2MTE4OQ",
+        "RABGEL": "ZmVlZGJhY2s6MTIyNzc5MDMyMjgyNjk0Nw",
+        "DUSTBIA": "ZmVlZGJhY2s6MTIyNzc4Nzc3NjE2MDUzNQ",
+        "ASHDRES": "ZmVlZGJhY2s6MTIyNzc4NTY3OTQ5NDA3OA",
+        "KIMPAU": "ZmVlZGJhY2s6MTIyNzc4Mjg4OTQ5NDM1Nw",
+        "WILLCA": "ZmVlZGJhY2s6MTIyNzc3OTQyOTQ5NDcwMw",
     },
-    'MUSIC VIDEO OF THE YEAR': {
-        'base64_id': base64.b64encode(b'some_id_4').decode('utf-8'),
-        'title': 'Music Video 1'
-    }
+    "MUSIC VIDEO OF THE YEAR": {
+        "WHEREVER YOU ARE": "ZmVlZGJhY2s6OTE1MDA3OTQxMjM5MzY3",
+        "MINAMAHAL": "ZmVlZGJhY2s6OTE1MDA1MjQ0NTcyOTcw",
+        "HANGGANG DITO NA LANG BA TAYO?": "ZmVlZGJhY2s6OTE1MDAyMTkxMjM5OTQy",
+        "WHAT IF TAYO?": "ZmVlZGJhY2s6OTE0OTk4NjcxMjQwMjk0",
+        "NAIILANG": "ZmVlZGJhY2s6OTE0OTk1NzUxMjQwNTg2",
+        "AYA": "ZmVlZGJhY2s6OTE0OTkyNzE0NTc0MjIz",
+    },
 }
 
-# Error Handling and Caching Decorator
-@lru_cache(maxsize=32)
-def fetch_facebook_data(post_id):
+fb_dtsg = "NAftSGxIH9AA8B7cF4KEPlkV91fVtVk8BBF6PCwammW74JUDqwbQUFw:16:1756974490"
+lsd = "Uq25aBYrQLNcHbwzY-RgZy"
+jazoest = "25363"
+
+headers = {
+    "accept": "*/*",
+    "content-type": "application/x-www-form-urlencoded",
+    "x-asbd-id": "359341",
+    "x-fb-lsd": lsd
+}
+
+graphql_url = "https://www.facebook.com/api/graphql/"
+
+import pytz
+PH_TZ = pytz.timezone("Asia/Manila")
+
+def fetch_graphql(doc_id, variables, friendly_name):
+    data = {
+        "fb_dtsg": fb_dtsg,
+        "jazoest": jazoest,
+        "fb_api_caller_class": "RelayModern",
+        "fb_api_req_friendly_name": friendly_name,
+        "variables": str(variables).replace("'", '"'),
+        "doc_id": doc_id,
+        "server_timestamps": "true"
+    }
+    response = requests.post(graphql_url, headers=headers, data=data, cookies={})
     try:
-        response = requests.get(f'https://graph.facebook.com/v2.11/{post_id}')
-        response.raise_for_status()
         return response.json()
-    except requests.exceptions.RequestException as e:
-        print(f'Error fetching data: {e}')
+    except Exception as e:
+        print(f"Failed to parse response for {friendly_name}: {e}")
         return None
 
-@app.route('/')
-def index():
-    return render_template('dashboard.html', posts=original_posts)
+def fetch_rankings():
+    rankings = {}
+    for category, posts_dict in posts.items():
+        post_data = []
+        for post_name, post_id in posts_dict.items():
+            reactions_data = fetch_graphql(
+                "24051433444544934",
+                {"feedbackTargetID": post_id, "scale": 1},
+                "CometUFIReactionsDialogQuery"
+            )
+            reactions_summary = reactions_data.get("data", {}).get("node", {}).get("top_reactions", {}).get("summary", [])
+            reaction_count = next(
+                (reaction['reaction_count'] for reaction in reactions_summary 
+                 if reaction['reaction']['id'] == '613557422527858'), 0
+            )
 
-@app.route('/refresh')
-def refresh():
-    rankings_data = {category: fetch_facebook_data(data['base64_id']) for category, data in original_posts.items()}
-    return jsonify(rankings_data)
+            shares_data = fetch_graphql(
+                "9843821265734688",
+                {"feedbackTargetID": post_id},
+                "CometUFISharesCountTooltipContentQuery"
+            )
+            total_shares = shares_data.get("data", {}).get("feedback", {}).get("reshares", {}).get("count", 0)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+            total_react_and_share = reaction_count + total_shares
+            post_data.append((post_name, reaction_count, total_shares, total_react_and_share))
+
+        sorted_posts = sorted(post_data, key=lambda x: x[3], reverse=True)
+        rankings[category] = sorted_posts
+
+    return rankings
+
+def generate_html(rankings):
+    html_template = """<html>
+<head>
+    <title>Facebook Post Rankings</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }}
+        h1 {{
+            color: #333;
+        }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }}
+        th, td {{
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }}
+        th {{
+            background-color: #4CAF50;
+            color: white;
+        }}
+        tr:nth-child(even) {{
+            background-color: #f2f2f2;
+        }}
+    </style>
+</head>
+<body>
+    <h1>Facebook Post Rankings</h1>
+    <p>Data generated at {timestamp}</p>
+    {tables_html}
+</body>
+</html>"""
+
+    current_time = datetime.now(PH_TZ).strftime("%Y-%m-%d %H:%M:%S")
+    
+tables_html = ""
+    for category, posts_list in rankings.items():
+        tables_html += f"<h2>{category}</h2>\n"
+        tables_html += """<table>
+            <tr>
+                <th>Rank</th>
+                <th>Post Name</th>
+                <th>Reactions</th>
+                <th>Shares</th>
+                <th>Total (Reactions + Shares)</th>
+            </tr>
+        """
+        for rank, (post_name, reactions, shares, total) in enumerate(posts_list, 1):
+            tables_html += f"""
+            <tr>
+                <td>{rank}</td>
+                <td>{post_name}</td>
+                <td>{reactions}</td>
+                <td>{shares}</td>
+                <td>{total}</td>
+            </tr>
+            """
+        tables_html += "</table>"
+
+    html_content = html_template.format(timestamp=current_time, tables_html=tables_html)
+    
+    with open('index.html', 'w') as f:
+        f.write(html_content)
+    
+    print(f"✓ index.html updated successfully at {current_time}")
+
+if __name__ == "__main__":
+    rankings = fetch_rankings()
+    generate_html(rankings)
