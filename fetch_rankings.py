@@ -1,95 +1,50 @@
+from flask import Flask, render_template, jsonify
 import requests
-import datetime
-import pytz
 import time
-import json
-from flask import Flask, render_template_string, request
-import os
+import base64
+from functools import lru_cache
 
-# Facebook API credentials
-fb_dtsg = 'YOUR_FB_DTSG'
-lsd = 'YOUR_LSD'
-jazoest = 'YOUR_JAZOEST'
-
-# Headers configuration
-headers = {
-    'User-Agent': 'Mozilla/5.0',
-    'Content-Type': 'application/json',
-}
-
-# Posts dictionary (example categories and IDs)
-posts = {
-    'Category1': [1234567890],
-    'Category2': [1234567891],
-}
-
-# Flask app setup
 app = Flask(__name__)
 
-# Cached data
-cached_data = {}
+# Original Posts Data with Categories
+original_posts = {
+    'DIGITAL SERIES OF THE YEAR': {
+        'base64_id': base64.b64encode(b'some_id_1').decode('utf-8'),
+        'title': 'Digital Series 1'
+    },
+    'FANDOM OF THE YEAR': {
+        'base64_id': base64.b64encode(b'some_id_2').decode('utf-8'),
+        'title': 'Fandom 1'
+    },
+    'LOVETEAM OF THE YEAR': {
+        'base64_id': base64.b64encode(b'some_id_3').decode('utf-8'),
+        'title': 'Loveteam 1'
+    },
+    'MUSIC VIDEO OF THE YEAR': {
+        'base64_id': base64.b64encode(b'some_id_4').decode('utf-8'),
+        'title': 'Music Video 1'
+    }
+}
 
-# Template for rankings dashboard
-HTML_TEMPLATE = '''
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rankings Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #f2f2f2; }
-    </style>
-</head>
-<body>
-<h1>Rankings Dashboard</h1>
-<table>
-    <tr><th>Category</th><th>Rank</th></tr>
-    {% for category, rank in cached_data.items() %}
-    <tr><td>{{ category }}</td><td>{{ rank }}</td></tr>
-    {% endfor %}
-</table>
-<form method="post">
-    <button type="submit">Refresh</button>
-</form>
-</body>
-</html>
-'''
-
-# Function to fetch GraphQL data
-def fetch_graphql(query):
-    response = requests.post('https://graph.facebook.com/graphql', headers=headers, json={'query': query})
-    if response.status_code == 200:
+# Error Handling and Caching Decorator
+@lru_cache(maxsize=32)
+def fetch_facebook_data(post_id):
+    try:
+        response = requests.get(f'https://graph.facebook.com/v2.11/{post_id}')
+        response.raise_for_status()
         return response.json()
-    else:
-        raise Exception(f'Error fetching GraphQL data: {response.status_code}')
+    except requests.exceptions.RequestException as e:
+        print(f'Error fetching data: {e}')
+        return None
 
-# Function to fetch and generate post data
-def fetch_and_generate():
-    for category, ids in posts.items():
-        # Fetch data for each post ID
-        for post_id in ids:
-            query = f'{{ post(id: {post_id}) {{ title, rank }} }}'
-            data = fetch_graphql(query)
-            if data:
-                # Assume JSON structure is returned
-                rank = data['data']['post']['rank']
-                cached_data[category] = rank
-
-# Flask route for index
-@app.route('/', methods=['GET'])
+@app.route('/')
 def index():
-    return render_template_string(HTML_TEMPLATE)
+    return render_template('dashboard.html', posts=original_posts)
 
-# Flask route for refresh
-@app.route('/', methods=['POST'])
+@app.route('/refresh')
 def refresh():
-    fetch_and_generate()
-    return render_template_string(HTML_TEMPLATE)
+    rankings_data = {category: fetch_facebook_data(data['base64_id']) for category, data in original_posts.items()}
+    return jsonify(rankings_data)
 
-# Main execution block
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True)
