@@ -166,7 +166,7 @@ def generate_html(rankings):
         tables_html += "</table><br>"
 
     # Generate HTML with cache-busting
-html_content = f"""
+    html_content = f"""
 <html>
 <head>
     <title>Facebook Post Rankings</title>
