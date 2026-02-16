@@ -179,3 +179,4 @@ tables_html = ""
 if __name__ == "__main__":
     rankings = fetch_rankings()
     generate_html(rankings)
+
