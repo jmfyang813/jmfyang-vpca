@@ -118,8 +118,22 @@ def generate_html(rankings):
         <th>Reactions</th>
         <th>Shares</th>
         <th>Total</th>
+        <th>Difference (1st vs 2nd)</th>
     </tr>
 """
+
+        # Display the top two differences
+        first_post = posts_list[0]
+        second_post = posts_list[1] if len(posts_list) > 1 else None
+
+        # Calculate the difference
+        if second_post:
+            reactions_diff = first_post[1] - second_post[1]
+            shares_diff = first_post[2] - second_post[2]
+            total_diff = first_post[3] - second_post[3]
+            diff_text = f"Reactions: {reactions_diff}, Shares: {shares_diff}, Total: {total_diff}"
+        else:
+            diff_text = "Not enough posts to compare"
 
         for rank, (post_name, reactions, shares, total) in enumerate(posts_list, 1):
             tables_html += f"""
@@ -129,6 +143,7 @@ def generate_html(rankings):
         <td>{reactions}</td>
         <td>{shares}</td>
         <td>{total}</td>
+        <td>{diff_text if rank == 1 else ''}</td>
     </tr>
 """
 
